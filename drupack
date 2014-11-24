@@ -1,0 +1,69 @@
+#!/bin/bash
+
+red='\033[0;31m'
+nc='\033[0m'
+
+function ACK_IT()
+{
+  ack -iHR "$1" $2
+}
+
+echo -e "${red}------------${nc}"
+echo -e "${red}Drupack v0.1${nc}"
+echo -e "${red}------------${nc}"
+echo
+
+echo -e "${red}Using node title:${nc}"
+ACK_IT "\\\$node->title" $1
+echo
+
+echo -e "${red}Using drupal_set_title:${nc}"
+ACK_IT 'drupal_set_title\(' $1
+echo
+
+echo -e "${red}Menu access callback:${nc}"
+ACK_IT 'access callback' $1
+echo
+
+echo -e "${red}Menu access arguments:${nc}"
+ACK_IT 'access arguments' $1
+echo
+
+echo -e "${red}Not using l or url:${nc}"
+ACK_IT "<a\\b.*\\\$" $1
+echo
+
+echo -e "${red}Directly accessing value:${nc}"
+ACK_IT "\]\['value'\]" $1
+echo
+
+echo -e "${red}SQL Injection:${nc}"
+ACK_IT "((db_query|db_select)(\\(['\"].*\\\$.*))|(\\b(SELECT|LIKE|CONCAT|AND|ON|LEFT|WHERE)\\b.*['\"].*\\\$.*['\"])" $1
+echo
+
+echo -e "${red}Super Global Input:${nc}"
+ACK_IT "(\\\$_GET|\\\$_POST|\\\$_REQUEST)"
+echo
+
+echo -e "${red}\$user use:${nc}"
+ACK_IT "\\\$user\\b"
+echo
+
+echo -e "${red}Using drupal_set_message:${nc}"
+ACK_IT 'drupal_set_message\(' $1
+echo
+
+echo -e "${red}Use of Echo/Print:${nc}"
+ACK_IT "(\\becho\\b|\\bprint\\b)"
+echo
+
+echo -e "${red}Use of debug functions:${nc}"
+ACK_IT "(\\bvar_dump\\b|\\bvar_export\\b|\\bprint_r\\b|\\bdsm\\b|\\bdpm\\b)"
+echo
+
+echo -e "${red}CrytoPHP:${nc}"
+ACK_IT "assets/images/social.png"
+echo
+
+echo -e "${nc}"
+exit 0
