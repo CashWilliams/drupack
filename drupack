@@ -62,7 +62,7 @@ ACK_IT "(\\bvar_dump\\b|\\bvar_export\\b|\\bprint_r\\b|\\bdsm\\b|\\bdpm\\b)"
 echo
 
 echo -e "${red}CrytoPHP:${nc}"
-ACK_IT "assets/images/social.png"
+ACK_IT "(include|require).*?\(.*(jpg|png|gif|jpeg|txt)"
 echo
 
 echo -e "${nc}"
