@@ -2,68 +2,85 @@
 
 red='\033[0;31m'
 nc='\033[0m'
+path=$1
+pipe=false
 
-function ACK_IT()
+function ACK_IT
 {
-  ack -iHR "$1" $2
+  if $pipe
+  then
+    ack --nocolor "$1" $path
+  else
+    ack -iHR "$1" $path
+  fi
 }
 
-echo -e "${red}------------${nc}"
-echo -e "${red}Drupack v0.1${nc}"
-echo -e "${red}------------${nc}"
+function PRETTY_PRINT
+{
+  if $pipe
+  then
+    echo $1
+  else
+    echo -e "${red}$1${nc}"
+  fi
+}
+
+PRETTY_PRINT '------------'
+PRETTY_PRINT 'Drupack v0.2'
+PRETTY_PRINT '------------'
 echo
 
-echo -e "${red}Using node title:${nc}"
-ACK_IT "\\\$node->title" $1
+PRETTY_PRINT 'Using node title:'
+ACK_IT "\\\$node->title"
 echo
 
-echo -e "${red}Using drupal_set_title:${nc}"
-ACK_IT 'drupal_set_title\(' $1
+PRETTY_PRINT 'Menu access callback:'
+ACK_IT 'access callback'
 echo
 
-echo -e "${red}Menu access callback:${nc}"
-ACK_IT 'access callback' $1
+PRETTY_PRINT 'Menu access arguments:'
+ACK_IT 'access arguments'
 echo
 
-echo -e "${red}Menu access arguments:${nc}"
-ACK_IT 'access arguments' $1
+PRETTY_PRINT 'Not using l or url:'
+ACK_IT "<a\\b.*\\\$"
 echo
 
-echo -e "${red}Not using l or url:${nc}"
-ACK_IT "<a\\b.*\\\$" $1
+PRETTY_PRINT 'Directly accessing value:'
+ACK_IT "\]\['value'\]"
 echo
 
-echo -e "${red}Directly accessing value:${nc}"
-ACK_IT "\]\['value'\]" $1
-echo
-
-echo -e "${red}SQL Injection:${nc}"
+PRETTY_PRINT 'SQL Injection:'
 ACK_IT "((db_query|db_select)(\\(['\"].*\\\$.*))|(\\b(SELECT|LIKE|CONCAT|AND|ON|LEFT|WHERE)\\b.*['\"].*\\\$.*['\"])" $1
 echo
 
-echo -e "${red}Super Global Input:${nc}"
+PRETTY_PRINT 'Super Global Input:'
 ACK_IT "(\\\$_GET|\\\$_POST|\\\$_REQUEST)"
 echo
 
-echo -e "${red}\$user use:${nc}"
+PRETTY_PRINT 'arg() usage:'
+ACK_IT " arg\\("
+echo
+
+PRETTY_PRINT '$user use:'
 ACK_IT "\\\$user\\b"
 echo
 
-echo -e "${red}Using drupal_set_message:${nc}"
-ACK_IT 'drupal_set_message\(' $1
+PRETTY_PRINT 'Using drupal_set_message:'
+ACK_IT 'drupal_set_message\('
 echo
 
-echo -e "${red}Use of Echo/Print:${nc}"
+PRETTY_PRINT 'Use of Echo/Print:'
 ACK_IT "(\\becho\\b|\\bprint\\b)"
 echo
 
-echo -e "${red}Use of debug functions:${nc}"
+PRETTY_PRINT 'Use of debug functions:'
 ACK_IT "(\\bvar_dump\\b|\\bvar_export\\b|\\bprint_r\\b|\\bdsm\\b|\\bdpm\\b)"
 echo
 
-echo -e "${red}CrytoPHP:${nc}"
+PRETTY_PRINT 'CrytoPHP:'
 ACK_IT "(include|require).*?\(.*(jpg|png|gif|jpeg|txt)"
 echo
 
-echo -e "${nc}"
+PRETTY_PRINT ' '
 exit 0
