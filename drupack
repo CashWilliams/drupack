@@ -1,10 +1,11 @@
 #!/bin/bash
 
-red='\033[0;31m'
-nc='\033[0m'
-path=$1
-pipe=false
+red='\033[0;31m' # Color Red for output
+nocolor='\033[0m' # No Color to reset color
+path=$1 # path to be searched
+pipe=false # output for pipe. @TODO this needs to be moved to an argument
 
+# Ack wrapper
 function ACK_IT
 {
   if $pipe
@@ -15,72 +16,88 @@ function ACK_IT
   fi
 }
 
+# Print wrapper
 function PRETTY_PRINT
 {
   if $pipe
   then
     echo $1
   else
-    echo -e "${red}$1${nc}"
+    echo -e "${red}$1${nocolor}"
   fi
 }
 
+# Header
 PRETTY_PRINT '------------'
 PRETTY_PRINT 'Drupack v0.2'
 PRETTY_PRINT '------------'
 echo
 
+# Find usage of raw node titles.
 PRETTY_PRINT 'Using node title:'
 ACK_IT "\\\$node->title"
 echo
 
+# List all access callback values.
 PRETTY_PRINT 'Menu access callback:'
 ACK_IT 'access callback'
 echo
 
+# List all access argument values.
 PRETTY_PRINT 'Menu access arguments:'
 ACK_IT 'access arguments'
 echo
 
-PRETTY_PRINT 'Not using l or url:'
+# Find hard coded links.
+PRETTY_PRINT 'Hard coded links (Should use l or url):'
 ACK_IT "<a\\b.*\\\$"
 echo
 
-PRETTY_PRINT 'Directly accessing value:'
+# Find direct access of field values.
+PRETTY_PRINT 'Directly accessing a field value:'
 ACK_IT "\]\['value'\]"
 echo
 
+# Look for common SQL Injection vulnerabilities.
 PRETTY_PRINT 'SQL Injection:'
 ACK_IT "((db_query|db_select)(\\(['\"].*\\\$.*))|(\\b(SELECT|LIKE|CONCAT|AND|ON|LEFT|WHERE)\\b.*['\"].*\\\$.*['\"])" $1
 echo
 
+# List all usage of super globals.
 PRETTY_PRINT 'Super Global Input:'
 ACK_IT "(\\\$_GET|\\\$_POST|\\\$_REQUEST)"
 echo
 
+# List all usage of arg() function.
 PRETTY_PRINT 'arg() usage:'
 ACK_IT " arg\\("
 echo
 
+# List all usage of $user variable.
 PRETTY_PRINT '$user use:'
 ACK_IT "\\\$user\\b"
 echo
 
+# List all drupal_set_message usage to ensure contents are escaped.
 PRETTY_PRINT 'Using drupal_set_message:'
 ACK_IT 'drupal_set_message\('
 echo
 
+# List all usage of echo or print. These are not normally used in Drupal.
 PRETTY_PRINT 'Use of Echo/Print:'
 ACK_IT "(\\becho\\b|\\bprint\\b)"
 echo
 
+# List all debug function usage. These typically not be commited to a code base.
 PRETTY_PRINT 'Use of debug functions:'
 ACK_IT "(\\bvar_dump\\b|\\bvar_export\\b|\\bprint_r\\b|\\bdsm\\b|\\bdpm\\b)"
 echo
 
+# Attempt to find files altered by CrytoPHP.
 PRETTY_PRINT 'CrytoPHP:'
 ACK_IT "(include|require).*?\(.*(jpg|png|gif|jpeg|txt)"
 echo
 
+# Blank line for formatting.
 PRETTY_PRINT ' '
 exit 0
